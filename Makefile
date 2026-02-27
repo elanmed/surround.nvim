@@ -1,8 +1,8 @@
 .PHONY: dev clean test lint docs
 
 dev:
-	mkdir -p ~/.local/share/nvim/site/pack/dev/start/wrap.nvim
-	stow -d .. -t ~/.local/share/nvim/site/pack/dev/start/wrap.nvim wrap.nvim
+	mkdir -p ~/.local/share/nvim/site/pack/dev/start/surround.nvim
+	stow -d .. -t ~/.local/share/nvim/site/pack/dev/start/surround.nvim surround.nvim
 
 clean:
 	rm -rf ~/.local/share/nvim/site/pack/dev
@@ -15,7 +15,7 @@ lint:
 	lua-language-server --check=./lua --checklevel=Error
 
 docs:
-	./deps/ts-vimdoc.nvim/scripts/docgen.sh README.md doc/wrap.txt wrap
+	./deps/ts-vimdoc.nvim/scripts/docgen.sh README.md doc/surround.txt surround
 	nvim --headless -c "helptags doc/" -c "qa"
 
 deploy: test lint docs

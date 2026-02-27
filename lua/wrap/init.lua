@@ -91,7 +91,7 @@ M.setup = function()
   end)
 
   vim.keymap.set("n", "ys", function()
-    _G.__wrap_add = function()
+    _G.__surround_add = function()
       local surround_char = vim.fn.nr2char(vim.fn.getchar())
       local open, close = get_pair(surround_char)
       local start_pos = vim.api.nvim_buf_get_mark(0, "[")
@@ -107,7 +107,7 @@ M.setup = function()
       vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { open, })
     end
 
-    vim.o.operatorfunc = "v:lua.__wrap_add"
+    vim.o.operatorfunc = "v:lua.__surround_add"
     return "g@"
   end, { expr = true, })
 end

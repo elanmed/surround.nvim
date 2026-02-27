@@ -1,8 +1,8 @@
 require "mini.test".setup()
 
 local T = MiniTest.new_set()
-T["wrap"] = MiniTest.new_set()
-T["wrap"]["dummy"] = function()
+T["surround"] = MiniTest.new_set()
+T["surround"]["dummy"] = function()
   MiniTest.expect.equality(true, true)
 end
 
