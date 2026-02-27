@@ -116,6 +116,14 @@ T["ds"]["deletes surrounding single quotes"] = function()
   expect_cursor(1, 1)
 end
 
+T["ds"]["deletes surrounding backticks"] = function()
+  set_lines { "`hello`", }
+  set_cursor(1, 1)
+  child.type_keys("ds", "`")
+  expect_lines { "hello", }
+  expect_cursor(1, 0)
+end
+
 T["ds"]["works with nested pairs"] = function()
   set_lines { "((hello))", }
   set_cursor(1, 2)
@@ -227,11 +235,19 @@ T["cs"]["changes parens to quotes"] = function()
   expect_cursor(1, 1)
 end
 
-T["cs"]["changes to same-char delimiters"] = function()
+T["cs"]["changes parens to backticks"] = function()
   set_lines { "(hello)", }
   set_cursor(1, 1)
-  child.type_keys("cs", ")", "'")
-  expect_lines { "'hello'", }
+  child.type_keys("cs", ")", "`")
+  expect_lines { "`hello`", }
+  expect_cursor(1, 1)
+end
+
+T["cs"]["changes backticks to parens"] = function()
+  set_lines { "`hello`", }
+  set_cursor(1, 1)
+  child.type_keys("cs", "`", ")")
+  expect_lines { "(hello)", }
   expect_cursor(1, 1)
 end
 
@@ -286,6 +302,17 @@ T["cs"]["no matching pair"]["leaves empty buffer unchanged"] = function()
   expect_lines { "", }
   expect_cursor(1, 0)
   expect_notify("[surround.nvim]: No matching pair", 4)
+end
+
+T["cs"]["invalid pair"] = new_set { hooks = { pre_case = stub_notify, }, }
+
+T["cs"]["invalid pair"]["leaves buffer unchanged for invalid target pair"] = function()
+  set_lines { "(hello)", }
+  set_cursor(1, 1)
+  child.type_keys("cs", ")", "z")
+  expect_lines { "(hello)", }
+  expect_cursor(1, 1)
+  expect_notify("[surround.nvim]: Invalid pair", 4)
 end
 
 T["ys"] = new_set()
@@ -369,5 +396,25 @@ T["ys"]["works with opening char"] = function()
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
 end
+
+T["ys"]["surrounds word with backticks"] = function()
+  set_lines { "hello", }
+  set_cursor(1, 0)
+  child.type_keys("ys", "iw", "`")
+  expect_lines { "`hello`", }
+  expect_cursor(1, 1)
+end
+
+T["ys"]["invalid pair"] = new_set { hooks = { pre_case = stub_notify, }, }
+
+T["ys"]["invalid pair"]["leaves buffer unchanged for invalid pair"] = function()
+  set_lines { "hello", }
+  set_cursor(1, 0)
+  child.type_keys("ys", "iw", "z")
+  expect_lines { "hello", }
+  expect_cursor(1, 0)
+  expect_notify("[surround.nvim]: Invalid pair", 4)
+end
+
 
 return T
