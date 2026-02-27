@@ -128,6 +128,29 @@ M.setup = function()
     vim.o.operatorfunc = "v:lua.__surround_add"
     return "g@"
   end, { expr = true, })
+
+  vim.keymap.set("v", "S", function()
+    local surround_char = vim.fn.nr2char(vim.fn.getchar())
+    local pair = get_pair(surround_char)
+    if pair == nil then
+      notify(vim.log.levels.ERROR, "Invalid pair")
+      return
+    end
+
+    local visual_start = vim.fn.getpos "v"
+    local visual_end = vim.fn.getpos "."
+
+    local one_idx_offset = 1
+    local start_row = visual_start[2] - one_idx_offset
+    local start_col = visual_start[3] - one_idx_offset
+    local end_row = visual_end[2] - one_idx_offset
+    local end_col = visual_end[3] - one_idx_offset
+    -- vim.print { start_row = start_row, start_col = start_col, end_row = end_row, end_col = end_col, }
+
+    vim.api.nvim_buf_set_text(0, end_row, end_col + 1, end_row, end_col + 1, { pair.close, })
+    vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { pair.open, })
+    vim.cmd "normal! \x1b"
+  end)
 end
 
 return M
