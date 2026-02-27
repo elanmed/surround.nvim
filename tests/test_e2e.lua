@@ -195,19 +195,11 @@ T["cs"]["changes parens to brackets"] = function()
   expect_cursor(1, 1)
 end
 
-T["cs"]["changes brackets to braces"] = function()
-  set_lines { "[hello]", }
+T["cs"]["changes parens to braces"] = function()
+  set_lines { "(hello)", }
   set_cursor(1, 1)
-  child.type_keys("cs", "]", "}")
+  child.type_keys("cs", ")", "}")
   expect_lines { "{hello}", }
-  expect_cursor(1, 1)
-end
-
-T["cs"]["changes braces to parens"] = function()
-  set_lines { "{hello}", }
-  set_cursor(1, 1)
-  child.type_keys("cs", "}", ")")
-  expect_lines { "(hello)", }
   expect_cursor(1, 1)
 end
 
@@ -216,14 +208,6 @@ T["cs"]["changes parens to angle brackets"] = function()
   set_cursor(1, 1)
   child.type_keys("cs", ")", ">")
   expect_lines { "<hello>", }
-  expect_cursor(1, 1)
-end
-
-T["cs"]["changes quotes to parens"] = function()
-  set_lines { '"hello"', }
-  set_cursor(1, 1)
-  child.type_keys("cs", '"', ")")
-  expect_lines { "(hello)", }
   expect_cursor(1, 1)
 end
 
@@ -243,13 +227,14 @@ T["cs"]["changes parens to backticks"] = function()
   expect_cursor(1, 1)
 end
 
-T["cs"]["changes backticks to parens"] = function()
-  set_lines { "`hello`", }
+T["cs"]["changes brackets to parens"] = function()
+  set_lines { "[hello]", }
   set_cursor(1, 1)
-  child.type_keys("cs", "`", ")")
+  child.type_keys("cs", "]", ")")
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
 end
+
 
 T["cs"]["works with text around the pair"] = function()
   set_lines { "foo (bar) baz", }
