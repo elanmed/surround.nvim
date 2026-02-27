@@ -18,6 +18,17 @@ local get_lines = function() return child.api.nvim_buf_get_lines(0, 0, -1, true)
 local set_lines = function(lines) child.api.nvim_buf_set_lines(0, 0, -1, true, lines) end
 local set_cursor = function(row, col) child.api.nvim_win_set_cursor(0, { row, col, }) end
 
+local stub_notify = function()
+  child.lua [[
+    _G.notify_log = {}
+    vim.notify = function(msg, level)
+      table.insert(_G.notify_log, { msg = msg, level = level, })
+    end
+  ]]
+end
+local get_notify_log = function() return child.lua_get [[_G.notify_log]] end
+local expected_notify = { { msg = "[surround.nvim]: No matching pair", level = 4, }, }
+
 T["ds"] = new_set()
 
 T["ds"]["deletes surrounding parentheses"] = function()
@@ -90,6 +101,32 @@ T["ds"]["preserves cursor line context"] = function()
   eq(get_lines(), { "before middle after", })
 end
 
+T["ds"]["no matching pair"] = new_set { hooks = { pre_case = stub_notify, }, }
+
+T["ds"]["no matching pair"]["leaves buffer unchanged when no pair found"] = function()
+  set_lines { "hello world", }
+  set_cursor(1, 3)
+  child.type_keys("ds", ")")
+  eq(get_lines(), { "hello world", })
+  eq(get_notify_log(), expected_notify)
+end
+
+T["ds"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = function()
+  set_lines { "(hello)", }
+  set_cursor(1, 1)
+  child.type_keys("ds", "]")
+  eq(get_lines(), { "(hello)", })
+  eq(get_notify_log(), expected_notify)
+end
+
+T["ds"]["no matching pair"]["leaves empty buffer unchanged"] = function()
+  set_lines { "", }
+  set_cursor(1, 0)
+  child.type_keys("ds", ")")
+  eq(get_lines(), { "", })
+  eq(get_notify_log(), expected_notify)
+end
+
 T["cs"] = new_set()
 
 T["cs"]["changes parens to brackets"] = function()
@@ -160,6 +197,32 @@ T["cs"]["works using opening char as target"] = function()
   set_cursor(1, 1)
   child.type_keys("cs", ")", "[")
   eq(get_lines(), { "[hello]", })
+end
+
+T["cs"]["no matching pair"] = new_set { hooks = { pre_case = stub_notify, }, }
+
+T["cs"]["no matching pair"]["leaves buffer unchanged when no pair found"] = function()
+  set_lines { "hello world", }
+  set_cursor(1, 3)
+  child.type_keys("cs", ")", "]")
+  eq(get_lines(), { "hello world", })
+  eq(get_notify_log(), expected_notify)
+end
+
+T["cs"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = function()
+  set_lines { "(hello)", }
+  set_cursor(1, 1)
+  child.type_keys("cs", "]", "}")
+  eq(get_lines(), { "(hello)", })
+  eq(get_notify_log(), expected_notify)
+end
+
+T["cs"]["no matching pair"]["leaves empty buffer unchanged"] = function()
+  set_lines { "", }
+  set_cursor(1, 0)
+  child.type_keys("cs", ")", "]")
+  eq(get_lines(), { "", })
+  eq(get_notify_log(), expected_notify)
 end
 
 T["ys"] = new_set()
