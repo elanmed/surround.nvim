@@ -10,12 +10,13 @@ local function get_pair(char)
     ["}"] = { "{", "}", },
     ["<"] = { "<", ">", },
     [">"] = { "<", ">", },
+    ["'"] = { "'", "'", },
+    ['"'] = { '"', '"', },
+    ["`"] = { "`", "`", },
   }
   local pair = pairs_map[char]
-  if pair then
-    return pair[1], pair[2]
-  end
-  return char, char
+  if not pair then return nil end
+  return { open = pair[1], close = pair[2], }
 end
 
 --- @param level vim.log.levels
@@ -86,22 +87,31 @@ M.setup = function()
       return
     end
 
-    local new_open, new_close = get_pair(new_char)
+    local new_pair = get_pair(new_char)
+    if new_pair == nil then
+      notify(vim.log.levels.ERROR, "Invalid pair")
+      return
+    end
 
     vim.api.nvim_buf_set_text(0,
       old_pair_pos.close_row, old_pair_pos.close_col, old_pair_pos.close_row, old_pair_pos.close_col + 1,
-      { new_close, }
+      { new_pair.close, }
     )
     vim.api.nvim_buf_set_text(0,
       old_pair_pos.open_row, old_pair_pos.open_col, old_pair_pos.open_row, old_pair_pos.open_col + 1,
-      { new_open, }
+      { new_pair.open, }
     )
   end)
 
   vim.keymap.set("n", "ys", function()
     _G.__surround_add = function()
       local surround_char = vim.fn.nr2char(vim.fn.getchar())
-      local open, close = get_pair(surround_char)
+      local pair = get_pair(surround_char)
+      if pair == nil then
+        notify(vim.log.levels.ERROR, "Invalid pair")
+        return
+      end
+
       local start_pos = vim.api.nvim_buf_get_mark(0, "[")
       local end_pos = vim.api.nvim_buf_get_mark(0, "]")
 
@@ -111,8 +121,8 @@ M.setup = function()
       local end_row = end_pos[1] - one_idx_offset
       local end_col = end_pos[2]
 
-      vim.api.nvim_buf_set_text(0, end_row, end_col + 1, end_row, end_col + 1, { close, })
-      vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { open, })
+      vim.api.nvim_buf_set_text(0, end_row, end_col + 1, end_row, end_col + 1, { pair.close, })
+      vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { pair.open, })
     end
 
     vim.o.operatorfunc = "v:lua.__surround_add"
