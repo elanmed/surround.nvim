@@ -18,6 +18,14 @@ local function get_pair(char)
   return char, char
 end
 
+--- @param level vim.log.levels
+--- @param msg string
+--- @param ... any
+local notify = function(level, msg, ...)
+  msg = "[surround.nvim]: " .. msg
+  vim.notify(msg:format(...), level)
+end
+
 --- @param char string
 local function find_surrounding_pair_0i(char)
   local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual", })
@@ -54,7 +62,7 @@ M.setup = function()
 
     local pair_pos = find_surrounding_pair_0i(char)
     if pair_pos == nil then
-      require "helpers".notify.error "No matching pair"
+      notify(vim.log.levels.ERROR, "No matching pair")
       return
     end
 
@@ -74,7 +82,7 @@ M.setup = function()
 
     local old_pair_pos = find_surrounding_pair_0i(old_char)
     if old_pair_pos == nil then
-      require "helpers".notify.error "No matching pair"
+      notify(vim.log.levels.ERROR, "No matching pair")
       return
     end
 
