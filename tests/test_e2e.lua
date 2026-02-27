@@ -235,7 +235,6 @@ T["cs"]["changes brackets to parens"] = function()
   expect_cursor(1, 1)
 end
 
-
 T["cs"]["works with text around the pair"] = function()
   set_lines { "foo (bar) baz", }
   set_cursor(1, 5)
@@ -400,6 +399,5 @@ T["ys"]["invalid pair"]["leaves buffer unchanged for invalid pair"] = function()
   expect_cursor(1, 0)
   expect_notify("[surround.nvim]: Invalid pair", 4)
 end
-
 
 return T
