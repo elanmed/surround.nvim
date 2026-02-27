@@ -1,0 +1,10 @@
+*wrap.txt*                                       Last change: 2026 February 27
+
+==============================================================================
+`WRAP.NVIM`                                                   *wrap-wrap.nvim*
+
+
+A minimal surround plugin
+
+
+vim:tw=78:ts=8:ft=help:norl:
