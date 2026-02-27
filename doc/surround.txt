@@ -3,20 +3,34 @@
 ==============================================================================
 Table of Contents                                 *surround-table-of-contents*
 
+Features ................................................. |surround-features|
+TODO ......................................................... |surround-todo|
 Similar plugins ................................... |surround-similar-plugins|
 
 ==============================================================================
 `SURROUND.NVIM`                                       *surround-surround.nvim*
 
 
-A minimal (`vim-surround`)[https://github.com/tpope/vim-surround]
+A minimal `vim-surround` <https://github.com/tpope/vim-surround>
 
+
+                                                                              
+FEATURES                                                   *surround-features*
+
+- TODO
+
+                                                                              
+TODO                                                           *surround-todo*
+
+- [ ] Dot repeat
+- [ ] Visual mode
+- [ ] Tests
 
                                                                               
 SIMILAR PLUGINS                                     *surround-similar-plugins*
 
-- (`vim-surround`)[https://github.com/tpope/vim-surround]
-- (`mini.surround`)[https://github.com/nvim-mini/mini.surround]
-- (`nvim-surround`)[https://github.com/kylechui/nvim-surround]
+- `vim-surround` <https://github.com/tpope/vim-surround>
+- `mini.surround` <https://github.com/nvim-mini/mini.surround>
+- `nvim-surround` <https://github.com/kylechui/nvim-surround>
 
 vim:tw=78:ts=8:ft=help:norl:

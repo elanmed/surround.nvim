@@ -1,6 +1,8 @@
+surround-features	surround.txt	/*surround-features*
 surround-similar-plugins	surround.txt	/*surround-similar-plugins*
 surround-surround.nvim	surround.txt	/*surround-surround.nvim*
 surround-table-of-contents	surround.txt	/*surround-table-of-contents*
+surround-todo	surround.txt	/*surround-todo*
 surround.txt	surround.txt	/*surround.txt*
 wrap-wrap.nvim	wrap.txt	/*wrap-wrap.nvim*
 wrap.txt	wrap.txt	/*wrap.txt*

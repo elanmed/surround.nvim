@@ -2,6 +2,16 @@
 
 A minimal [`vim-surround`](https://github.com/tpope/vim-surround)
 
+### Features
+
+- TODO
+
+### TODO
+
+- [ ] Dot repeat
+- [ ] Visual mode
+- [ ] Tests
+
 ### Similar plugins
 
 - [`vim-surround`](https://github.com/tpope/vim-surround)
