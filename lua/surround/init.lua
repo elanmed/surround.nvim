@@ -74,67 +74,86 @@ M.setup = function()
   vim.keymap.set("n", "ds", function()
     local char = vim.fn.nr2char(vim.fn.getchar())
 
-    trigger_visual(char)
-    local pair_pos = get_pos_from_marks_0i("<", ">")
+    _G.__surround_delete = function()
+      trigger_visual(char)
+      local pair_pos = get_pos_from_marks_0i("<", ">")
 
-    if pair_pos == nil then
-      notify(vim.log.levels.ERROR, "No matching pair")
-      return
+      if pair_pos == nil then
+        notify(vim.log.levels.ERROR, "No matching pair")
+        return
+      end
+
+      vim.api.nvim_buf_set_text(0,
+        pair_pos.close_row, pair_pos.close_col, pair_pos.close_row, pair_pos.close_col + 1,
+        { "", }
+      )
+      vim.api.nvim_buf_set_text(0,
+        pair_pos.open_row, pair_pos.open_col, pair_pos.open_row, pair_pos.open_col + 1,
+        { "", }
+      )
     end
 
-    vim.api.nvim_buf_set_text(0,
-      pair_pos.close_row, pair_pos.close_col, pair_pos.close_row, pair_pos.close_col + 1,
-      { "", }
-    )
-    vim.api.nvim_buf_set_text(0,
-      pair_pos.open_row, pair_pos.open_col, pair_pos.open_row, pair_pos.open_col + 1,
-      { "", }
-    )
-  end)
+    vim.o.operatorfunc = "v:lua.__surround_delete"
+    return "g@l"
+  end, { expr = true, })
 
   vim.keymap.set("n", "cs", function()
     local old_char = vim.fn.nr2char(vim.fn.getchar())
-    local new_char = vim.fn.nr2char(vim.fn.getchar())
+    local new_pair_cached = nil
 
-    trigger_visual(old_char)
-    local old_pair_pos = get_pos_from_marks_0i("<", ">")
+    _G.__surround_change = function()
+      trigger_visual(old_char)
+      local old_pair_pos = get_pos_from_marks_0i("<", ">")
 
-    if old_pair_pos == nil then
-      notify(vim.log.levels.ERROR, "No matching pair")
-      return
+      if old_pair_pos == nil then
+        notify(vim.log.levels.ERROR, "No matching pair")
+        return
+      end
+
+      if new_pair_cached == nil then
+        local new_char = vim.fn.nr2char(vim.fn.getchar())
+
+        new_pair_cached = get_pair(new_char)
+        if new_pair_cached == nil then
+          notify(vim.log.levels.ERROR, "Invalid pair")
+          return
+        end
+      end
+
+      vim.api.nvim_buf_set_text(0,
+        old_pair_pos.close_row, old_pair_pos.close_col, old_pair_pos.close_row, old_pair_pos.close_col + 1,
+        { new_pair_cached.close, }
+      )
+      vim.api.nvim_buf_set_text(0,
+        old_pair_pos.open_row, old_pair_pos.open_col, old_pair_pos.open_row, old_pair_pos.open_col + 1,
+        { new_pair_cached.open, }
+      )
     end
 
-    local new_pair = get_pair(new_char)
-    if new_pair == nil then
-      notify(vim.log.levels.ERROR, "Invalid pair")
-      return
-    end
-
-    vim.api.nvim_buf_set_text(0,
-      old_pair_pos.close_row, old_pair_pos.close_col, old_pair_pos.close_row, old_pair_pos.close_col + 1,
-      { new_pair.close, }
-    )
-    vim.api.nvim_buf_set_text(0,
-      old_pair_pos.open_row, old_pair_pos.open_col, old_pair_pos.open_row, old_pair_pos.open_col + 1,
-      { new_pair.open, }
-    )
-  end)
+    vim.o.operatorfunc = "v:lua.__surround_change"
+    return "g@l"
+  end, { expr = true, })
 
   vim.keymap.set("n", "ys", function()
+    local pair_cached = nil
+
     _G.__surround_add = function()
-      local surround_char = vim.fn.nr2char(vim.fn.getchar())
-      local pair = get_pair(surround_char)
-      if pair == nil then
-        notify(vim.log.levels.ERROR, "Invalid pair")
-        return
+      if pair_cached == nil then
+        local surround_char = vim.fn.nr2char(vim.fn.getchar())
+        pair_cached = get_pair(surround_char)
+        if pair_cached == nil then
+          notify(vim.log.levels.ERROR, "Invalid pair")
+          return
+        end
       end
 
       local pos = get_pos_from_marks_0i("[", "]")
       assert(pos ~= nil)
       pos.close_col = clamp_to_line_len(pos.close_row, pos.close_col)
 
-      vim.api.nvim_buf_set_text(0, pos.close_row, pos.close_col + 1, pos.close_row, pos.close_col + 1, { pair.close, })
-      vim.api.nvim_buf_set_text(0, pos.open_row, pos.open_col, pos.open_row, pos.open_col, { pair.open, })
+      vim.api.nvim_buf_set_text(0, pos.close_row, pos.close_col + 1, pos.close_row, pos.close_col + 1,
+        { pair_cached.close, })
+      vim.api.nvim_buf_set_text(0, pos.open_row, pos.open_col, pos.open_row, pos.open_col, { pair_cached.open, })
     end
 
     vim.o.operatorfunc = "v:lua.__surround_add"
