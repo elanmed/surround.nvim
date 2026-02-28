@@ -13,6 +13,7 @@ local function get_pair(char)
     ["'"] = { "'", "'", },
     ['"'] = { '"', '"', },
     ["`"] = { "`", "`", },
+    [" "] = { " ", " ", },
   }
   local pair = pairs_map[char]
   if not pair then return nil end
@@ -28,7 +29,7 @@ local notify = function(level, msg, ...)
 end
 
 --- @param char string
-local function find_surrounding_pair_0i(char)
+local function trigger_visual(char)
   local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual", })
   local saved_cursor = vim.api.nvim_win_get_cursor(0)
 
@@ -37,11 +38,15 @@ local function find_surrounding_pair_0i(char)
   vim.cmd "normal! \x1b"
   vim.api.nvim_set_hl(0, "Visual", saved_visual_hl)
   vim.api.nvim_win_set_cursor(0, saved_cursor)
+end
 
-  local open_pos = vim.api.nvim_buf_get_mark(0, "<")
+--- @param start_mark string
+--- @param end_mark string
+local function get_pos_from_marks_0i(start_mark, end_mark)
+  local open_pos = vim.api.nvim_buf_get_mark(0, start_mark)
   if open_pos[1] == 0 and open_pos[2] == 0 then return nil end
 
-  local close_pos = vim.api.nvim_buf_get_mark(0, ">")
+  local close_pos = vim.api.nvim_buf_get_mark(0, end_mark)
   if close_pos[1] == 0 and close_pos[2] == 0 then return nil end
 
   if open_pos[1] == close_pos[1] and open_pos[2] == close_pos[2] then return nil end
@@ -56,12 +61,22 @@ local function find_surrounding_pair_0i(char)
   }
 end
 
+--- @param row number
+--- @param col number
+local function clamp_to_line_len(row, col)
+  local one_idx_offset = 1
+  local line_text = vim.api.nvim_buf_get_lines(0, row, row + 1, true)[1]
+  return math.min(col, #line_text - one_idx_offset)
+end
+
 
 M.setup = function()
   vim.keymap.set("n", "ds", function()
     local char = vim.fn.nr2char(vim.fn.getchar())
 
-    local pair_pos = find_surrounding_pair_0i(char)
+    trigger_visual(char)
+    local pair_pos = get_pos_from_marks_0i("<", ">")
+
     if pair_pos == nil then
       notify(vim.log.levels.ERROR, "No matching pair")
       return
@@ -81,7 +96,9 @@ M.setup = function()
     local old_char = vim.fn.nr2char(vim.fn.getchar())
     local new_char = vim.fn.nr2char(vim.fn.getchar())
 
-    local old_pair_pos = find_surrounding_pair_0i(old_char)
+    trigger_visual(old_char)
+    local old_pair_pos = get_pos_from_marks_0i("<", ">")
+
     if old_pair_pos == nil then
       notify(vim.log.levels.ERROR, "No matching pair")
       return
@@ -112,17 +129,12 @@ M.setup = function()
         return
       end
 
-      local start_pos = vim.api.nvim_buf_get_mark(0, "[")
-      local end_pos = vim.api.nvim_buf_get_mark(0, "]")
+      local pos = get_pos_from_marks_0i("[", "]")
+      assert(pos ~= nil)
+      pos.close_col = clamp_to_line_len(pos.close_row, pos.close_col)
 
-      local one_idx_offset = 1
-      local start_row = start_pos[1] - one_idx_offset
-      local start_col = start_pos[2]
-      local end_row = end_pos[1] - one_idx_offset
-      local end_col = end_pos[2]
-
-      vim.api.nvim_buf_set_text(0, end_row, end_col + 1, end_row, end_col + 1, { pair.close, })
-      vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { pair.open, })
+      vim.api.nvim_buf_set_text(0, pos.close_row, pos.close_col + 1, pos.close_row, pos.close_col + 1, { pair.close, })
+      vim.api.nvim_buf_set_text(0, pos.open_row, pos.open_col, pos.open_row, pos.open_col, { pair.open, })
     end
 
     vim.o.operatorfunc = "v:lua.__surround_add"
@@ -137,19 +149,13 @@ M.setup = function()
       return
     end
 
-    local visual_start = vim.fn.getpos "v"
-    local visual_end = vim.fn.getpos "."
-
-    local one_idx_offset = 1
-    local start_row = visual_start[2] - one_idx_offset
-    local start_col = visual_start[3] - one_idx_offset
-    local end_row = visual_end[2] - one_idx_offset
-    local end_col = visual_end[3] - one_idx_offset
-    -- vim.print { start_row = start_row, start_col = start_col, end_row = end_row, end_col = end_col, }
-
-    vim.api.nvim_buf_set_text(0, end_row, end_col + 1, end_row, end_col + 1, { pair.close, })
-    vim.api.nvim_buf_set_text(0, start_row, start_col, start_row, start_col, { pair.open, })
     vim.cmd "normal! \x1b"
+    local pos = get_pos_from_marks_0i("<", ">")
+    assert(pos ~= nil)
+    pos.close_col = clamp_to_line_len(pos.close_row, pos.close_col)
+
+    vim.api.nvim_buf_set_text(0, pos.close_row, pos.close_col + 1, pos.close_row, pos.close_col + 1, { pair.close, })
+    vim.api.nvim_buf_set_text(0, pos.open_row, pos.open_col, pos.open_row, pos.open_col, { pair.open, })
   end)
 end
 

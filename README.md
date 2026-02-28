@@ -10,7 +10,6 @@ A minimal [`vim-surround`](https://github.com/tpope/vim-surround)
 
 - [ ] Dot repeat
 - [ ] Visual mode
-- [ ] Tests
 
 ### Similar plugins
 

@@ -24,7 +24,6 @@ TODO                                                           *surround-todo*
 
 - [ ] Dot repeat
 - [ ] Visual mode
-- [ ] Tests
 
                                                                               
 SIMILAR PLUGINS                                     *surround-similar-plugins*
