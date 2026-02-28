@@ -102,14 +102,6 @@ M.setup = function()
     local new_pair_cached = nil
 
     _G.__surround_change = function()
-      trigger_visual(old_char)
-      local old_pair_pos = get_pos_from_marks_0i("<", ">")
-
-      if old_pair_pos == nil then
-        notify(vim.log.levels.ERROR, "No matching pair")
-        return
-      end
-
       if new_pair_cached == nil then
         local new_char = vim.fn.nr2char(vim.fn.getchar())
 
@@ -118,6 +110,14 @@ M.setup = function()
           notify(vim.log.levels.ERROR, "Invalid pair")
           return
         end
+      end
+
+      trigger_visual(old_char)
+      local old_pair_pos = get_pos_from_marks_0i("<", ">")
+
+      if old_pair_pos == nil then
+        notify(vim.log.levels.ERROR, "No matching pair")
+        return
       end
 
       vim.api.nvim_buf_set_text(0,
