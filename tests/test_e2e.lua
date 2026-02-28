@@ -185,6 +185,16 @@ T["ds"]["no matching pair"]["leaves empty buffer unchanged"] = function()
   expect_notify("[surround.nvim]: No matching pair", 4)
 end
 
+T["ds"]["repeats delete surround on another pair"] = function()
+  set_lines { "(hello) (world)", }
+  set_cursor(1, 1)
+  child.type_keys("ds", ")")
+  expect_lines { "hello (world)", }
+  set_cursor(1, 7)
+  child.type_keys "."
+  expect_lines { "hello world", }
+end
+
 T["cs"] = new_set()
 
 T["cs"]["changes parens to brackets"] = function()
@@ -299,6 +309,16 @@ T["cs"]["invalid pair"]["leaves buffer unchanged for invalid target pair"] = fun
   expect_notify("[surround.nvim]: Invalid pair", 4)
 end
 
+T["cs"]["repeats change surround on another pair"] = function()
+  set_lines { "(hello) (world)", }
+  set_cursor(1, 1)
+  child.type_keys("cs", ")", "]")
+  expect_lines { "[hello] (world)", }
+  set_cursor(1, 9)
+  child.type_keys "."
+  expect_lines { "[hello] [world]", }
+end
+
 T["ys"] = new_set()
 
 T["ys"]["surrounds word with parens"] = function()
@@ -398,6 +418,16 @@ T["ys"]["invalid pair"]["leaves buffer unchanged for invalid pair"] = function()
   expect_lines { "hello", }
   expect_cursor(1, 0)
   expect_notify("[surround.nvim]: Invalid pair", 4)
+end
+
+T["ys"]["repeats add surround on another word"] = function()
+  set_lines { "hello world", }
+  set_cursor(1, 0)
+  child.type_keys("ys", "iw", ")")
+  expect_lines { "(hello) world", }
+  set_cursor(1, 8)
+  child.type_keys "."
+  expect_lines { "(hello) (world)", }
 end
 
 return T
