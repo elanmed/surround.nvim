@@ -124,6 +124,27 @@ T["ds"]["deletes surrounding backticks"] = function()
   expect_cursor(1, 0)
 end
 
+T["ds"]["deletes surrounding backticks with preceding text"] = function()
+  set_lines { "local x = `hello`", }
+  set_cursor(1, 12)
+  child.type_keys("ds", "`")
+  expect_lines { "local x = hello", }
+end
+
+T["ds"]["deletes surrounding quotes with preceding text"] = function()
+  set_lines { 'local x = "hello"', }
+  set_cursor(1, 12)
+  child.type_keys("ds", '"')
+  expect_lines { "local x = hello", }
+end
+
+T["ds"]["deletes surrounding single quotes with preceding text"] = function()
+  set_lines { "local x = 'hello'", }
+  set_cursor(1, 12)
+  child.type_keys("ds", "'")
+  expect_lines { "local x = hello", }
+end
+
 T["ds"]["works with nested pairs"] = function()
   set_lines { "((hello))", }
   set_cursor(1, 2)
@@ -243,6 +264,27 @@ T["cs"]["changes brackets to parens"] = function()
   child.type_keys("cs", "]", ")")
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
+end
+
+T["cs"]["changes backticks to parens with preceding text"] = function()
+  set_lines { "local x = `hello`", }
+  set_cursor(1, 12)
+  child.type_keys("cs", "`", ")")
+  expect_lines { "local x = (hello)", }
+end
+
+T["cs"]["changes quotes to brackets with preceding text"] = function()
+  set_lines { 'local x = "hello"', }
+  set_cursor(1, 12)
+  child.type_keys("cs", '"', "]")
+  expect_lines { "local x = [hello]", }
+end
+
+T["cs"]["changes single quotes to braces with preceding text"] = function()
+  set_lines { "local x = 'hello'", }
+  set_cursor(1, 12)
+  child.type_keys("cs", "'", "}")
+  expect_lines { "local x = {hello}", }
 end
 
 T["cs"]["works with text around the pair"] = function()
