@@ -16,16 +16,8 @@ local function get_pair(char)
     [" "] = { " ", " ", },
   }
   local pair = pairs_map[char]
-  if not pair then return nil end
+  if pair == nil then return nil end
   return { open = pair[1], close = pair[2], }
-end
-
---- @param level vim.log.levels
---- @param msg string
---- @param ... any
-local notify = function(level, msg, ...)
-  msg = "[surround.nvim]: " .. msg
-  vim.notify(msg:format(...), level)
 end
 
 --- @param start_mark string
@@ -73,16 +65,10 @@ local function find_surround_pos(char)
   vim.api.nvim_win_set_cursor(0, saved_cursor)
 
   local pos = get_pos_from_marks("<", ">")
-  if pos == nil then
-    notify(vim.log.levels.ERROR, "Failed to find surround position")
-    return nil
-  end
+  if pos == nil then return nil end
 
   local pair = get_pair(char)
-  if pair == nil then
-    notify(vim.log.levels.WARN, "Invalid surround character: %s", char)
-    return nil
-  end
+  if pair == nil then return nil end
 
   local open_line = vim.api.nvim_buf_get_lines(0, pos.open_row_0i, pos.open_row_0i + 1, true)[1]
   if open_line:sub(pos.open_col_1i, pos.open_col_1i) ~= pair.open then
@@ -109,6 +95,21 @@ local function find_surround_pos(char)
   return pos
 end
 
+--- @param level vim.log.levels
+--- @param msg string
+--- @param ... any
+local notify = function(level, msg, ...)
+  msg = "[surround.nvim]: " .. msg
+  vim.notify(msg:format(...), level)
+end
+
+local notify_invalid_pair = function(char)
+  notify(vim.log.levels.WARN, "Invalid pair: %s", char)
+end
+
+local notify_no_matching_pair = function(char)
+  notify(vim.log.levels.WARN, "No matching pair: %s", char)
+end
 
 M.setup = function()
   vim.keymap.set("n", "ds", function()
@@ -116,9 +117,8 @@ M.setup = function()
 
     _G.__surround_delete = function()
       local pair_pos = find_surround_pos(char)
-
       if pair_pos == nil then
-        notify(vim.log.levels.WARN, "No matching pair")
+        notify_no_matching_pair(char)
         return
       end
 
@@ -146,15 +146,14 @@ M.setup = function()
 
         new_pair_cached = get_pair(new_char)
         if new_pair_cached == nil then
-          notify(vim.log.levels.WARN, "Invalid pair")
+          notify_invalid_pair(new_char)
           return
         end
       end
 
       local old_pair_pos = find_surround_pos(old_char)
-
       if old_pair_pos == nil then
-        notify(vim.log.levels.WARN, "No matching pair")
+        notify_no_matching_pair(old_char)
         return
       end
 
@@ -180,14 +179,14 @@ M.setup = function()
         local surround_char = vim.fn.nr2char(vim.fn.getchar())
         pair_cached = get_pair(surround_char)
         if pair_cached == nil then
-          notify(vim.log.levels.WARN, "Invalid pair")
+          notify_invalid_pair(surround_char)
           return
         end
       end
 
       local pos = get_pos_from_marks("[", "]")
       if pos == nil then
-        notify(vim.log.levels.ERROR, "Failed to get position from marks")
+        notify(vim.log.levels.ERROR, "Failed to get operator position")
         return
       end
 
@@ -207,14 +206,14 @@ M.setup = function()
     local surround_char = vim.fn.nr2char(vim.fn.getchar())
     local pair = get_pair(surround_char)
     if pair == nil then
-      notify(vim.log.levels.WARN, "Invalid pair")
+      notify_invalid_pair(surround_char)
       return
     end
 
     vim.cmd "normal! \x1b"
     local pos = get_pos_from_marks("<", ">")
     if pos == nil then
-      notify(vim.log.levels.ERROR, "Failed to get position from marks")
+      notify(vim.log.levels.ERROR, "Failed to get surround position")
       return
     end
     pos.close_col_0i = clamp_to_line_len(pos.close_row_0i, pos.close_col_0i)
