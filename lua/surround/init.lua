@@ -104,11 +104,11 @@ local notify = function(level, msg, ...)
 end
 
 local notify_invalid_pair = function(char)
-  notify(vim.log.levels.WARN, "Invalid pair: %s", char)
+  notify(vim.log.levels.WARN, "Invalid pair: '%s'", char)
 end
 
 local notify_no_matching_pair = function(char)
-  notify(vim.log.levels.WARN, "No matching pair: %s", char)
+  notify(vim.log.levels.WARN, "No matching pair: '%s'", char)
 end
 
 M.setup = function()
