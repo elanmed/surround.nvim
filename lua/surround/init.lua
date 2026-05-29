@@ -138,19 +138,14 @@ M.setup = function()
 
   vim.keymap.set("n", "cs", function()
     local old_char = vim.fn.nr2char(vim.fn.getchar())
-    local new_pair_cached = nil
+    local new_char = vim.fn.nr2char(vim.fn.getchar())
+    local new_pair = get_pair(new_char)
+    if new_pair == nil then
+      notify_invalid_pair(new_char)
+      return
+    end
 
     _G.__surround_change = function()
-      if new_pair_cached == nil then
-        local new_char = vim.fn.nr2char(vim.fn.getchar())
-
-        new_pair_cached = get_pair(new_char)
-        if new_pair_cached == nil then
-          notify_invalid_pair(new_char)
-          return
-        end
-      end
-
       local old_pair_pos = find_surround_pos(old_char)
       if old_pair_pos == nil then
         notify_no_matching_pair(old_char)
@@ -159,11 +154,11 @@ M.setup = function()
 
       vim.api.nvim_buf_set_text(0,
         old_pair_pos.close_row_0i, old_pair_pos.close_col_0i, old_pair_pos.close_row_0i, old_pair_pos.close_col_0i + 1,
-        { new_pair_cached.close, }
+        { new_pair.close, }
       )
       vim.api.nvim_buf_set_text(0,
         old_pair_pos.open_row_0i, old_pair_pos.open_col_0i, old_pair_pos.open_row_0i, old_pair_pos.open_col_0i + 1,
-        { new_pair_cached.open, }
+        { new_pair.open, }
       )
     end
 
