@@ -185,7 +185,7 @@ T["ds"]["no matching pair"]["leaves buffer unchanged when no pair found"] = func
   child.type_keys("ds", ")")
   expect_lines { "hello world", }
   expect_cursor(1, 3)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ')'", 3)
 end
 
 T["ds"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = function()
@@ -194,7 +194,7 @@ T["ds"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = fu
   child.type_keys("ds", "]")
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ']'", 3)
 end
 
 T["ds"]["no matching pair"]["leaves empty buffer unchanged"] = function()
@@ -203,7 +203,7 @@ T["ds"]["no matching pair"]["leaves empty buffer unchanged"] = function()
   child.type_keys("ds", ")")
   expect_lines { "", }
   expect_cursor(1, 0)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ')'", 3)
 end
 
 T["ds"]["repeats delete surround on another pair"] = function()
@@ -319,7 +319,7 @@ T["cs"]["no matching pair"]["leaves buffer unchanged when no pair found"] = func
   child.type_keys("cs", ")", "]")
   expect_lines { "hello world", }
   expect_cursor(1, 3)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ')'", 3)
 end
 
 T["cs"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = function()
@@ -328,7 +328,7 @@ T["cs"]["no matching pair"]["leaves buffer unchanged with wrong pair type"] = fu
   child.type_keys("cs", "]", "}")
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ']'", 3)
 end
 
 T["cs"]["no matching pair"]["leaves empty buffer unchanged"] = function()
@@ -337,7 +337,7 @@ T["cs"]["no matching pair"]["leaves empty buffer unchanged"] = function()
   child.type_keys("cs", ")", "]")
   expect_lines { "", }
   expect_cursor(1, 0)
-  expect_notify("[surround.nvim]: No matching pair", 4)
+  expect_notify("[surround.nvim]: No matching pair: ')'", 3)
 end
 
 T["cs"]["invalid pair"] = new_set { hooks = { pre_case = stub_notify, }, }
@@ -348,7 +348,7 @@ T["cs"]["invalid pair"]["leaves buffer unchanged for invalid target pair"] = fun
   child.type_keys("cs", ")", "z")
   expect_lines { "(hello)", }
   expect_cursor(1, 1)
-  expect_notify("[surround.nvim]: Invalid pair", 4)
+  expect_notify("[surround.nvim]: Invalid pair: 'z'", 3)
 end
 
 T["cs"]["repeats change surround on another pair"] = function()
@@ -459,7 +459,7 @@ T["ys"]["invalid pair"]["leaves buffer unchanged for invalid pair"] = function()
   child.type_keys("ys", "iw", "z")
   expect_lines { "hello", }
   expect_cursor(1, 0)
-  expect_notify("[surround.nvim]: Invalid pair", 4)
+  expect_notify("[surround.nvim]: Invalid pair: 'z'", 3)
 end
 
 T["ys"]["repeats add surround on another word"] = function()
