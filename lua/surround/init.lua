@@ -2,34 +2,42 @@ local M = {}
 
 local function get_pair(char)
   local pairs_map = {
-    ["("] = { "(", ")", },
-    [")"] = { "(", ")", },
-    ["["] = { "[", "]", },
-    ["]"] = { "[", "]", },
-    ["{"] = { "{", "}", },
-    ["}"] = { "{", "}", },
-    ["<"] = { "<", ">", },
-    [">"] = { "<", ">", },
-    ["'"] = { "'", "'", },
-    ['"'] = { '"', '"', },
-    ["`"] = { "`", "`", },
-    [" "] = { " ", " ", },
+    ["("] = { "(", ")" },
+    [")"] = { "(", ")" },
+    ["["] = { "[", "]" },
+    ["]"] = { "[", "]" },
+    ["{"] = { "{", "}" },
+    ["}"] = { "{", "}" },
+    ["<"] = { "<", ">" },
+    [">"] = { "<", ">" },
+    ["'"] = { "'", "'" },
+    ["\""] = { "\"", "\"" },
+    ["`"] = { "`", "`" },
+    [" "] = { " ", " " },
   }
   local pair = pairs_map[char]
-  if pair == nil then return nil end
-  return { open = pair[1], close = pair[2], }
+  if pair == nil then
+    return nil
+  end
+  return { open = pair[1], close = pair[2] }
 end
 
 --- @param start_mark string
 --- @param end_mark string
 local function get_pos_from_marks(start_mark, end_mark)
   local open_pos = vim.api.nvim_buf_get_mark(0, start_mark)
-  if open_pos[1] == 0 and open_pos[2] == 0 then return nil end
+  if open_pos[1] == 0 and open_pos[2] == 0 then
+    return nil
+  end
 
   local close_pos = vim.api.nvim_buf_get_mark(0, end_mark)
-  if close_pos[1] == 0 and close_pos[2] == 0 then return nil end
+  if close_pos[1] == 0 and close_pos[2] == 0 then
+    return nil
+  end
 
-  if open_pos[1] == close_pos[1] and open_pos[2] == close_pos[2] then return nil end
+  if open_pos[1] == close_pos[1] and open_pos[2] == close_pos[2] then
+    return nil
+  end
 
   return {
     open_row_0i = open_pos[1] - 1,
@@ -55,20 +63,24 @@ end
 --- @param char string
 --- @return table|nil
 local function find_surround_pos(char)
-  local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual", })
+  local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual" })
   local saved_cursor = vim.api.nvim_win_get_cursor(0)
 
-  vim.api.nvim_set_hl(0, "Visual", { link = "Normal", })
+  vim.api.nvim_set_hl(0, "Visual", { link = "Normal" })
   vim.cmd("normal! va" .. char)
   vim.cmd "normal! \x1b"
   vim.api.nvim_set_hl(0, "Visual", saved_visual_hl)
   vim.api.nvim_win_set_cursor(0, saved_cursor)
 
   local pos = get_pos_from_marks("<", ">")
-  if pos == nil then return nil end
+  if pos == nil then
+    return nil
+  end
 
   local pair = get_pair(char)
-  if pair == nil then return nil end
+  if pair == nil then
+    return nil
+  end
 
   local open_line = vim.api.nvim_buf_get_lines(0, pos.open_row_0i, pos.open_row_0i + 1, true)[1]
   if open_line:sub(pos.open_col_1i, pos.open_col_1i) ~= pair.open then
@@ -122,19 +134,27 @@ M.setup = function()
         return
       end
 
-      vim.api.nvim_buf_set_text(0,
-        pair_pos.close_row_0i, pair_pos.close_col_0i, pair_pos.close_row_0i, pair_pos.close_col_0i + 1,
-        { "", }
+      vim.api.nvim_buf_set_text(
+        0,
+        pair_pos.close_row_0i,
+        pair_pos.close_col_0i,
+        pair_pos.close_row_0i,
+        pair_pos.close_col_0i + 1,
+        { "" }
       )
-      vim.api.nvim_buf_set_text(0,
-        pair_pos.open_row_0i, pair_pos.open_col_0i, pair_pos.open_row_0i, pair_pos.open_col_0i + 1,
-        { "", }
+      vim.api.nvim_buf_set_text(
+        0,
+        pair_pos.open_row_0i,
+        pair_pos.open_col_0i,
+        pair_pos.open_row_0i,
+        pair_pos.open_col_0i + 1,
+        { "" }
       )
     end
 
     vim.o.operatorfunc = "v:lua.__surround_delete"
     return "g@l"
-  end, { expr = true, })
+  end, { expr = true })
 
   vim.keymap.set("n", "cs", function()
     local old_char = vim.fn.nr2char(vim.fn.getchar())
@@ -152,19 +172,27 @@ M.setup = function()
         return
       end
 
-      vim.api.nvim_buf_set_text(0,
-        old_pair_pos.close_row_0i, old_pair_pos.close_col_0i, old_pair_pos.close_row_0i, old_pair_pos.close_col_0i + 1,
-        { new_pair.close, }
+      vim.api.nvim_buf_set_text(
+        0,
+        old_pair_pos.close_row_0i,
+        old_pair_pos.close_col_0i,
+        old_pair_pos.close_row_0i,
+        old_pair_pos.close_col_0i + 1,
+        { new_pair.close }
       )
-      vim.api.nvim_buf_set_text(0,
-        old_pair_pos.open_row_0i, old_pair_pos.open_col_0i, old_pair_pos.open_row_0i, old_pair_pos.open_col_0i + 1,
-        { new_pair.open, }
+      vim.api.nvim_buf_set_text(
+        0,
+        old_pair_pos.open_row_0i,
+        old_pair_pos.open_col_0i,
+        old_pair_pos.open_row_0i,
+        old_pair_pos.open_col_0i + 1,
+        { new_pair.open }
       )
     end
 
     vim.o.operatorfunc = "v:lua.__surround_change"
     return "g@l"
-  end, { expr = true, })
+  end, { expr = true })
 
   vim.keymap.set("n", "ys", function()
     local pair_cached = nil
@@ -187,15 +215,27 @@ M.setup = function()
 
       pos.close_col_0i = clamp_to_line_len(pos.close_row_0i, pos.close_col_0i)
 
-      vim.api.nvim_buf_set_text(0, pos.close_row_0i, pos.close_col_0i + 1, pos.close_row_0i, pos.close_col_0i + 1,
-        { pair_cached.close, })
-      vim.api.nvim_buf_set_text(0, pos.open_row_0i, pos.open_col_0i, pos.open_row_0i, pos.open_col_0i,
-        { pair_cached.open, })
+      vim.api.nvim_buf_set_text(
+        0,
+        pos.close_row_0i,
+        pos.close_col_0i + 1,
+        pos.close_row_0i,
+        pos.close_col_0i + 1,
+        { pair_cached.close }
+      )
+      vim.api.nvim_buf_set_text(
+        0,
+        pos.open_row_0i,
+        pos.open_col_0i,
+        pos.open_row_0i,
+        pos.open_col_0i,
+        { pair_cached.open }
+      )
     end
 
     vim.o.operatorfunc = "v:lua.__surround_add"
     return "g@"
-  end, { expr = true, })
+  end, { expr = true })
 
   vim.keymap.set("v", "S", function()
     local surround_char = vim.fn.nr2char(vim.fn.getchar())
@@ -213,9 +253,22 @@ M.setup = function()
     end
     pos.close_col_0i = clamp_to_line_len(pos.close_row_0i, pos.close_col_0i)
 
-    vim.api.nvim_buf_set_text(0, pos.close_row_0i, pos.close_col_0i + 1, pos.close_row_0i, pos.close_col_0i + 1,
-      { pair.close, })
-    vim.api.nvim_buf_set_text(0, pos.open_row_0i, pos.open_col_0i, pos.open_row_0i, pos.open_col_0i, { pair.open, })
+    vim.api.nvim_buf_set_text(
+      0,
+      pos.close_row_0i,
+      pos.close_col_0i + 1,
+      pos.close_row_0i,
+      pos.close_col_0i + 1,
+      { pair.close }
+    )
+    vim.api.nvim_buf_set_text(
+      0,
+      pos.open_row_0i,
+      pos.open_col_0i,
+      pos.open_row_0i,
+      pos.open_col_0i,
+      { pair.open }
+    )
   end)
 end
 
