@@ -371,6 +371,14 @@ T["ys"]["surrounds word with parens"] = function()
   expect_cursor(1, 1)
 end
 
+T["ys"]["surrounds a one-letter word"] = function()
+  set_lines { "a" }
+  set_cursor(1, 0)
+  child.type_keys("ys", "iw", ")")
+  expect_lines { "(a)" }
+  expect_cursor(1, 1)
+end
+
 T["ys"]["surrounds word with brackets"] = function()
   set_lines { "hello" }
   set_cursor(1, 0)

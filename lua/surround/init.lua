@@ -24,7 +24,8 @@ end
 
 --- @param start_mark string
 --- @param end_mark string
-local function get_pos_from_marks(start_mark, end_mark)
+--- @param opts? { allow_single_char?: boolean }
+local function get_pos_from_marks(start_mark, end_mark, opts)
   local open_pos = vim.api.nvim_buf_get_mark(0, start_mark)
   if open_pos[1] == 0 and open_pos[2] == 0 then
     return nil
@@ -36,7 +37,13 @@ local function get_pos_from_marks(start_mark, end_mark)
   end
 
   if open_pos[1] == close_pos[1] and open_pos[2] == close_pos[2] then
-    return nil
+    if not (opts and opts.allow_single_char) then
+      return nil
+    end
+    local line = vim.api.nvim_buf_get_lines(0, open_pos[1] - 1, open_pos[1], true)[1]
+    if line == nil or open_pos[2] >= #line then
+      return nil
+    end
   end
 
   return {
@@ -207,7 +214,7 @@ M.setup = function()
         end
       end
 
-      local pos = get_pos_from_marks("[", "]")
+      local pos = get_pos_from_marks("[", "]", { allow_single_char = true })
       if pos == nil then
         notify(vim.log.levels.ERROR, "Failed to get operator position")
         return
