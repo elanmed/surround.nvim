@@ -1,5 +1,9 @@
 local M = {}
 
+local is_cancel = function(char)
+  return char == "\27"
+end
+
 local function get_pair(char)
   local pairs_map = {
     ["("] = { "(", ")" },
@@ -70,7 +74,7 @@ end
 --- @param char string
 --- @return table|nil
 local function find_surround_pos(char)
-  local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual" })
+  local saved_visual_hl = vim.api.nvim_get_hl(0, { name = "Visual" }) --[[@as vim.api.keyset.highlight]]
   local saved_cursor = vim.api.nvim_win_get_cursor(0)
 
   vim.api.nvim_set_hl(0, "Visual", { link = "Normal" })
@@ -122,6 +126,10 @@ local notify = function(level, msg, ...)
   vim.notify(msg:format(...), level)
 end
 
+local notify_cancelled = function()
+  notify(vim.log.levels.INFO, "Cancelled")
+end
+
 local notify_invalid_pair = function(char)
   notify(vim.log.levels.WARN, "Invalid pair: '%s'", char)
 end
@@ -132,7 +140,11 @@ end
 
 M.setup = function()
   vim.keymap.set("n", "ds", function()
-    local char = vim.fn.nr2char(vim.fn.getchar())
+    local char = vim.fn.getcharstr()
+    if is_cancel(char) then
+      notify_cancelled()
+      return
+    end
 
     _G.__surround_delete = function()
       local pair_pos = find_surround_pos(char)
@@ -164,8 +176,17 @@ M.setup = function()
   end, { expr = true })
 
   vim.keymap.set("n", "cs", function()
-    local old_char = vim.fn.nr2char(vim.fn.getchar())
-    local new_char = vim.fn.nr2char(vim.fn.getchar())
+    local old_char = vim.fn.getcharstr()
+    if is_cancel(old_char) then
+      notify_cancelled()
+      return
+    end
+
+    local new_char = vim.fn.getcharstr()
+    if is_cancel(new_char) then
+      notify_cancelled()
+      return
+    end
     local new_pair = get_pair(new_char)
     if new_pair == nil then
       notify_invalid_pair(new_char)
@@ -206,7 +227,11 @@ M.setup = function()
 
     _G.__surround_add = function()
       if pair_cached == nil then
-        local surround_char = vim.fn.nr2char(vim.fn.getchar())
+        local surround_char = vim.fn.getcharstr()
+        if is_cancel(surround_char) then
+          notify_cancelled()
+          return
+        end
         pair_cached = get_pair(surround_char)
         if pair_cached == nil then
           notify_invalid_pair(surround_char)
@@ -245,7 +270,11 @@ M.setup = function()
   end, { expr = true })
 
   vim.keymap.set("v", "S", function()
-    local surround_char = vim.fn.nr2char(vim.fn.getchar())
+    local surround_char = vim.fn.getcharstr()
+    if is_cancel(surround_char) then
+      notify_cancelled()
+      return
+    end
     local pair = get_pair(surround_char)
     if pair == nil then
       notify_invalid_pair(surround_char)

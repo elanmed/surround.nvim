@@ -1,4 +1,5 @@
 surround-features	surround.txt	/*surround-features*
+surround-installation-and-setup	surround.txt	/*surround-installation-and-setup*
 surround-similar-plugins	surround.txt	/*surround-similar-plugins*
 surround-surround.nvim	surround.txt	/*surround-surround.nvim*
 surround-table-of-contents	surround.txt	/*surround-table-of-contents*

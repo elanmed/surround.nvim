@@ -1,3 +1,4 @@
+local MiniTest = require "mini.test"
 local new_set = MiniTest.new_set
 local expect, eq = MiniTest.expect, MiniTest.expect.equality
 
@@ -478,6 +479,90 @@ T["ys"]["repeats add surround on another word"] = function()
   set_cursor(1, 8)
   child.type_keys "."
   expect_lines { "(hello) (world)" }
+end
+
+T["S"] = new_set()
+
+T["S"]["surrounds a forward visual selection"] = function()
+  set_lines { "hello world" }
+  set_cursor(1, 0)
+  child.type_keys("veS", ")")
+  expect_lines { "(hello) world" }
+end
+
+T["S"]["surrounds a reversed visual selection"] = function()
+  set_lines { "hello world" }
+  set_cursor(1, 4)
+  child.type_keys("vbS", "]")
+  expect_lines { "[hello] world" }
+end
+
+T["S"]["surrounds a selection ending at the last character"] = function()
+  set_lines { "hello world" }
+  set_cursor(1, 6)
+  child.type_keys("v$S", "}")
+  expect_lines { "hello {world}" }
+end
+
+T["S"]["surrounds a multiline selection"] = function()
+  set_lines { "hello", "world" }
+  set_cursor(1, 0)
+  child.type_keys("VjS", ")")
+  expect_lines { "(hello", "world)" }
+end
+
+T["S cancellation"] = new_set { hooks = { pre_case = stub_notify } }
+
+T["S cancellation"]["leaves a visual selection unchanged and reports cancellation"] = function()
+  set_lines { "hello" }
+  set_cursor(1, 0)
+  child.type_keys "veS<Esc>"
+  expect_lines { "hello" }
+  expect_notify("[surround.nvim]: Cancelled", 2)
+end
+
+T["S invalid pair"] = new_set { hooks = { pre_case = stub_notify } }
+
+T["S invalid pair"]["leaves selection unchanged and notifies"] = function()
+  set_lines { "hello" }
+  set_cursor(1, 0)
+  child.type_keys "veSz"
+  expect_lines { "hello" }
+  expect_notify("[surround.nvim]: Invalid pair: 'z'", 3)
+end
+
+T["cancellation"] = new_set { hooks = { pre_case = stub_notify } }
+
+T["cancellation"]["cancels ds without changing text and reports cancellation"] = function()
+  set_lines { "(hello)" }
+  set_cursor(1, 1)
+  child.type_keys "ds<Esc>"
+  expect_lines { "(hello)" }
+  expect_notify("[surround.nvim]: Cancelled", 2)
+end
+
+T["cancellation"]["cancels cs at the old-pair prompt without waiting and reports cancellation"] = function()
+  set_lines { "(hello)" }
+  set_cursor(1, 1)
+  child.type_keys "cs<Esc>"
+  expect_lines { "(hello)" }
+  expect_notify("[surround.nvim]: Cancelled", 2)
+end
+
+T["cancellation"]["cancels cs at the new-pair prompt and reports cancellation"] = function()
+  set_lines { "(hello)" }
+  set_cursor(1, 1)
+  child.type_keys("cs)", "<Esc>")
+  expect_lines { "(hello)" }
+  expect_notify("[surround.nvim]: Cancelled", 2)
+end
+
+T["cancellation"]["cancels ys after the motion and reports cancellation"] = function()
+  set_lines { "hello" }
+  set_cursor(1, 0)
+  child.type_keys "ysiw<Esc>"
+  expect_lines { "hello" }
+  expect_notify("[surround.nvim]: Cancelled", 2)
 end
 
 return T
