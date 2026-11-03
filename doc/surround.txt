@@ -1,10 +1,10 @@
-*surround.txt*                                   Last change: 2026 February 27
+*surround.txt*                                   Last change: 2026 November 01
 
 ==============================================================================
 Table of Contents                                 *surround-table-of-contents*
 
 Features ................................................. |surround-features|
-Installation and setup ..................... |surround-installation-and-setup|
+Default keymaps ................................... |surround-default-keymaps|
 Similar plugins ................................... |surround-similar-plugins|
 
 ==============================================================================
@@ -25,17 +25,10 @@ FEATURES                                                   *surround-features*
   keymaps are dot-repeatable
 
 ------------------------------------------------------------------------------
-INSTALLATION AND SETUP                       *surround-installation-and-setup*
+DEFAULT KEYMAPS                                     *surround-default-keymaps*
 
 
-Install the plugin with your Neovim plugin manager. When the plugin is loaded,
-`plugin/surround.lua` calls `require("surround").setup()` automatically. If
-you manage loading manually, call:
-
->lua
-    require("surround").setup()
-<
-The plugin defines these default mappings:
+The plugin defines the following default mappings:
 
 | Mapping            | Action                                              |
 | ------------------ | --------------------------------------------------- |
@@ -46,10 +39,9 @@ The plugin defines these default mappings:
 
 The supported pair characters are `(` / `)`, `[` / `]`, `{` / `}`, `<` / `>`,
 single quote, double quote, backtick, and space. Either side of bracket pairs
-can be entered. Pair lookup for delete/change uses Vim native pair matching.
+can be entered.
 
-Pressing `Esc` at a character prompt cancels the operation and emits an
-informational notification.
+Pressing `Esc` at a character prompt cancels the operation.
 
 
 ------------------------------------------------------------------------------
